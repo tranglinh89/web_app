@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, Check, X, Grip, ArrowUpFromLine, RotateCw } from 'lucide-react';
+import { Settings, Check, X, Grip, ArrowUpFromLine, RotateCw, AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface JointType {
   id: string;
@@ -40,22 +40,63 @@ export const MechanicsModule: React.FC = () => {
     setShowMatResult(true);
   };
 
-  const getMatStyle = (type: 'strength'|'cost'|'workability', val: string) => {
-      if (!showMatResult) return 'bg-white border-gray-200';
-      // Correct answers: Strength->Plywood(van_ep), Cost->Cardboard(bia), Work->Cardboard/Popsicle(bia/que)
-      // Simplifying for this demo:
-      // Strength: Ván ép
-      // Cost: Bìa Carton
-      // Work: Bìa Carton
-      
-      const correctMap = {
-          strength: 'van_ep',
-          cost: 'bia',
-          workability: 'bia'
-      };
+  const handleMaterialChange = (criteria: keyof typeof materialAnswers, value: string) => {
+    setMaterialAnswers(prev => ({ ...prev, [criteria]: value }));
+    // Reset trạng thái hiển thị kết quả để học sinh có thể thử lại
+    setShowMatResult(false);
+  };
 
-      if (val === correctMap[type]) return 'bg-green-100 border-green-500 text-green-800';
-      return 'bg-red-50 border-red-300 text-red-800';
+  // Logic phản hồi chi tiết cho từng lựa chọn
+  const getFeedback = (criteria: 'strength' | 'cost' | 'workability', value: string) => {
+    if (!showMatResult || !value) return null;
+
+    let isCorrect = false;
+    let message = "";
+
+    switch (criteria) {
+      case 'strength': 
+        if (value === 'formex') {
+          isCorrect = true;
+          message = "Đúng, Formex rất cứng và chịu nước tốt. Tuy nhiên, khuyến khích bạn ưu tiên dùng **Bìa Carton** để tận dụng vật liệu tái chế (bảo vệ môi trường), tiết kiệm chi phí và dễ tìm kiếm hơn.";
+        } else if (value === 'bia') {
+          // CẬP NHẬT: Chấp nhận bìa carton nếu là loại cứng
+          isCorrect = true;
+          message = "Rất tốt! Dù bìa carton mềm hơn gỗ, nhưng nếu chọn loại 'Carton lạnh' hoặc dán chồng 3-4 lớp, nó hoàn toàn đủ cứng để gắp vật nặng.";
+        } else if (value === 'que') {
+          message = "Chưa tối ưu. Que kem cứng nhưng bản nhỏ, khó ghép thành cánh tay lớn chịu lực.";
+        }
+        break;
+
+      case 'cost': 
+        if (value === 'bia') {
+          isCorrect = true;
+          message = "Chính xác! Có thể tận dụng vỏ hộp cũ, thùng mì tôm... hoàn toàn miễn phí.";
+        } else if (value === 'que') {
+          message = "Tạm được. Que kem rẻ nhưng vẫn tốn tiền mua số lượng lớn.";
+        } else if (value === 'formex') {
+          message = "Không tối ưu về giá. Bìa Formex phải mua ở tiệm văn phòng phẩm, giá cao hơn bìa carton.";
+        }
+        break;
+
+      case 'workability': 
+        if (value === 'bia') {
+          isCorrect = true;
+          message = "Chính xác! Bìa carton rất dễ cắt, đục lỗ và dán keo.";
+        } else if (value === 'formex') {
+          isCorrect = true;
+          message = "Khá tốt. Formex mềm, dễ cắt bằng dao rọc giấy (tuy nhiên khó hơn bìa carton một chút).";
+        } else if (value === 'que') {
+          message = "Khó hơn. Cần dùng kìm cắt hoặc dao sắc để cắt ngắn que kem, dễ bị nứt.";
+        }
+        break;
+    }
+
+    return (
+      <div className={`mt-2 text-xs p-2 rounded border flex items-start ${isCorrect ? 'bg-green-50 border-green-200 text-green-800' : 'bg-yellow-50 border-yellow-200 text-yellow-800'}`}>
+        {isCorrect ? <Check className="w-4 h-4 mr-1 flex-shrink-0" /> : <AlertTriangle className="w-4 h-4 mr-1 flex-shrink-0" />}
+        <span>{message}</span>
+      </div>
+    );
   };
 
   return (
@@ -126,87 +167,94 @@ export const MechanicsModule: React.FC = () => {
             <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
                 <Settings className="w-5 h-5 mr-2" /> Hoạt động 2: Lựa chọn vật liệu
             </h3>
+            <p className="text-sm text-gray-500 mb-4 italic">Hãy đóng vai kỹ sư để chọn vật liệu phù hợp nhất cho từng tiêu chí thiết kế.</p>
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left text-gray-600">
                     <thead className="text-xs text-gray-700 uppercase bg-gray-100">
                         <tr>
-                            <th className="px-4 py-3 rounded-l-lg">Tiêu chí</th>
-                            <th className="px-4 py-3">Lựa chọn của bạn</th>
-                            <th className="px-4 py-3 rounded-r-lg">Kết quả</th>
+                            <th className="px-4 py-3 rounded-l-lg w-1/3">Tiêu chí</th>
+                            <th className="px-4 py-3 w-1/3">Lựa chọn của bạn</th>
+                            <th className="px-4 py-3 rounded-r-lg w-1/3">Giải thích</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr className="bg-white border-b">
-                            <td className="px-4 py-4 font-medium text-gray-900">Độ cứng vững cao nhất</td>
-                            <td className="px-4 py-4">
+                        {/* Strength Row */}
+                        <tr className="bg-white border-b hover:bg-gray-50">
+                            <td className="px-4 py-4 font-medium text-gray-900 align-top">
+                                Độ cứng vững cao nhất
+                                <div className="text-xs text-gray-400 font-normal mt-1">Vật liệu làm khung chính chịu lực.</div>
+                            </td>
+                            <td className="px-4 py-4 align-top">
                                 <select 
                                     className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-purple-500 focus:border-purple-500"
-                                    onChange={(e) => setMaterialAnswers({...materialAnswers, strength: e.target.value})}
+                                    onChange={(e) => handleMaterialChange('strength', e.target.value)}
+                                    value={materialAnswers.strength}
                                 >
                                     <option value="">-- Chọn --</option>
-                                    <option value="bia">Bìa Carton</option>
+                                    <option value="bia">Bìa Carton cứng</option>
                                     <option value="que">Que kem</option>
-                                    <option value="van_ep">Ván ép (Gỗ mỏng)</option>
+                                    <option value="formex">Bìa Formex (Nhựa xốp)</option>
                                 </select>
                             </td>
-                            <td className="px-4 py-4">
-                                {showMatResult && (
-                                    <span className={`px-2 py-1 rounded text-xs font-bold ${getMatStyle('strength', materialAnswers.strength)}`}>
-                                        {materialAnswers.strength === 'van_ep' ? 'Đúng (Gỗ cứng nhất)' : 'Sai'}
-                                    </span>
-                                )}
+                            <td className="px-4 py-4 align-top">
+                                {getFeedback('strength', materialAnswers.strength)}
                             </td>
                         </tr>
-                        <tr className="bg-white border-b">
-                            <td className="px-4 py-4 font-medium text-gray-900">Chi phí thấp nhất (dễ kiếm)</td>
-                            <td className="px-4 py-4">
+
+                        {/* Cost Row */}
+                        <tr className="bg-white border-b hover:bg-gray-50">
+                            <td className="px-4 py-4 font-medium text-gray-900 align-top">
+                                Chi phí thấp nhất
+                                <div className="text-xs text-gray-400 font-normal mt-1">Dễ tìm kiếm, tận dụng đồ tái chế.</div>
+                            </td>
+                            <td className="px-4 py-4 align-top">
                                 <select 
                                     className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-purple-500 focus:border-purple-500"
-                                    onChange={(e) => setMaterialAnswers({...materialAnswers, cost: e.target.value})}
+                                    onChange={(e) => handleMaterialChange('cost', e.target.value)}
+                                    value={materialAnswers.cost}
                                 >
                                     <option value="">-- Chọn --</option>
-                                    <option value="bia">Bìa Carton</option>
+                                    <option value="bia">Bìa Carton cứng</option>
                                     <option value="que">Que kem</option>
-                                    <option value="van_ep">Ván ép</option>
+                                    <option value="formex">Bìa Formex</option>
                                 </select>
                             </td>
-                            <td className="px-4 py-4">
-                                 {showMatResult && (
-                                    <span className={`px-2 py-1 rounded text-xs font-bold ${getMatStyle('cost', materialAnswers.cost)}`}>
-                                        {materialAnswers.cost === 'bia' ? 'Đúng (Tận dụng vỏ hộp)' : 'Chưa tối ưu'}
-                                    </span>
-                                )}
+                            <td className="px-4 py-4 align-top">
+                                {getFeedback('cost', materialAnswers.cost)}
                             </td>
                         </tr>
-                        <tr className="bg-white">
-                            <td className="px-4 py-4 font-medium text-gray-900">Dễ gia công (cắt/dán) nhất</td>
-                            <td className="px-4 py-4">
+
+                        {/* Workability Row */}
+                        <tr className="bg-white hover:bg-gray-50">
+                            <td className="px-4 py-4 font-medium text-gray-900 align-top">
+                                Dễ gia công nhất
+                                <div className="text-xs text-gray-400 font-normal mt-1">Dễ cắt, dán bằng dụng cụ học sinh.</div>
+                            </td>
+                            <td className="px-4 py-4 align-top">
                                 <select 
                                     className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-purple-500 focus:border-purple-500"
-                                    onChange={(e) => setMaterialAnswers({...materialAnswers, workability: e.target.value})}
+                                    onChange={(e) => handleMaterialChange('workability', e.target.value)}
+                                    value={materialAnswers.workability}
                                 >
                                     <option value="">-- Chọn --</option>
-                                    <option value="bia">Bìa Carton</option>
+                                    <option value="bia">Bìa Carton cứng</option>
                                     <option value="que">Que kem</option>
-                                    <option value="van_ep">Ván ép</option>
+                                    <option value="formex">Bìa Formex</option>
                                 </select>
                             </td>
-                            <td className="px-4 py-4">
-                                {showMatResult && (
-                                    <span className={`px-2 py-1 rounded text-xs font-bold ${getMatStyle('workability', materialAnswers.workability)}`}>
-                                        {materialAnswers.workability === 'bia' ? 'Đúng (Dùng kéo cắt được)' : 'Khó hơn'}
-                                    </span>
-                                )}
+                            <td className="px-4 py-4 align-top">
+                                {getFeedback('workability', materialAnswers.workability)}
                             </td>
                         </tr>
                     </tbody>
                 </table>
-                <div className="mt-4 text-right">
+                <div className="mt-6 text-right">
                     <button 
                         onClick={checkMaterialResults}
-                        className="text-white bg-purple-600 hover:bg-purple-700 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 focus:outline-none"
+                        className="text-white bg-purple-600 hover:bg-purple-700 shadow-md font-medium rounded-lg text-sm px-6 py-2.5 mr-2 mb-2 focus:outline-none transition-colors flex items-center inline-flex"
                     >
-                        Kiểm tra Đáp án
+                        {showMatResult ? <RefreshCw className="w-4 h-4 mr-2"/> : null}
+                        {showMatResult ? 'Kiểm tra lại' : 'Kiểm tra Đáp án'}
                     </button>
                 </div>
             </div>

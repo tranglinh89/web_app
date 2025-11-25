@@ -1,7 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 
-const apiKey = process.env.API_KEY || '';
+// Safe access to process.env.API_KEY to prevent "process is not defined" error in browsers
+const apiKey = (typeof process !== 'undefined' && process.env && process.env.API_KEY) ? process.env.API_KEY : '';
 
+// Ensure we only initialize if we have a key, otherwise we might error out later.
+// But for now, we just initialize it. If the key is empty, requests will fail gracefully.
 const ai = new GoogleGenAI({ apiKey: apiKey });
 
 export const askTutor = async (question: string, context: string): Promise<string> => {

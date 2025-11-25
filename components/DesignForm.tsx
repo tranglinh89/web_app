@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PenTool, Save, Check } from 'lucide-react';
-import { DesignData } from '../types';
+import { DesignData } from '../types.ts';
 
 interface DesignFormProps {
   onSave: (data: DesignData) => void;
@@ -73,9 +73,9 @@ export const DesignForm: React.FC<DesignFormProps> = ({ onSave }) => {
                 value={formData.frameMaterial}
                 onChange={e => setFormData({...formData, frameMaterial: e.target.value})}
               >
-                <option value="bia">Bìa Carton (Rẻ, dễ làm)</option>
+                <option value="bia">Bìa Carton cứng (Rẻ, dễ gia công)</option>
                 <option value="que">Que kem (Khá cứng, thẩm mỹ)</option>
-                <option value="van_ep">Ván ép (Rất cứng, khó cắt)</option>
+                <option value="formex">Bìa Formex (Cứng, không thấm nước)</option>
                 <option value="hon_hop">Hỗn hợp (Kết hợp các loại)</option>
               </select>
             </div>

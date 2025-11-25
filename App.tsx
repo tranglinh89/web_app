@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { AppStep, DesignData } from './types';
-import { PascalModule } from './components/PascalModule';
-import { MechanicsModule } from './components/MechanicsModule';
-import { DesignForm } from './components/DesignForm';
-import { AITutor } from './components/AITutor';
-import { BookOpen, Cog, FileText, ChevronRight, Beaker } from 'lucide-react';
+import { AppStep, DesignData } from './types.ts';
+import { PascalModule } from './components/PascalModule.tsx';
+import { MechanicsModule } from './components/MechanicsModule.tsx';
+import { DesignForm } from './components/DesignForm.tsx';
+import { BookOpen, Cog, FileText, ChevronRight, Beaker, Printer } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<AppStep>(AppStep.INTRO);
@@ -67,39 +66,74 @@ const App: React.FC = () => {
         return <DesignForm onSave={handleDesignSave} />;
       case AppStep.SUMMARY:
         return (
-          <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg border-2 border-dashed border-gray-300 animate-fadeIn">
-            <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Tổng hợp Thiết Kế</h2>
-            <div className="space-y-4 text-gray-700">
-              <div className="flex justify-between border-b pb-2">
-                <span className="font-semibold">Hệ thống lực:</span>
-                <span>{designData?.s1_diameter}mm (S1) &rarr; {designData?.s2_diameter}mm (S2)</span>
+          <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg border-2 border-dashed border-gray-300 animate-fadeIn print:shadow-none print:border-none print:w-full print:max-w-none">
+            <div className="text-center border-b pb-6 mb-6">
+              <h2 className="text-3xl font-bold text-gray-800">PHIẾU ĐỀ XUẤT THIẾT KẾ</h2>
+              <p className="text-gray-500 uppercase tracking-wider mt-2">Dự án STEM: Robot Thủy Lực</p>
+            </div>
+            
+            <div className="space-y-6 text-gray-700">
+              <div className="bg-gray-50 p-4 rounded-lg print:bg-white print:border print:border-gray-200">
+                <h3 className="text-teal-700 font-bold mb-3 border-b border-gray-200 pb-2">1. Hệ thống truyền động</h3>
+                <div className="grid grid-cols-2 gap-4">
+                   <div>
+                      <span className="block text-sm text-gray-500">Xilanh điều khiển (S1):</span>
+                      <span className="font-mono text-lg font-bold">{designData?.s1_diameter} mm</span>
+                   </div>
+                   <div>
+                      <span className="block text-sm text-gray-500">Xilanh chấp hành (S2):</span>
+                      <span className="font-mono text-lg font-bold">{designData?.s2_diameter} mm</span>
+                   </div>
+                </div>
               </div>
-              <div className="flex justify-between border-b pb-2">
-                <span className="font-semibold">Vật liệu khung:</span>
-                <span className="uppercase">{designData?.frameMaterial}</span>
+
+              <div className="bg-gray-50 p-4 rounded-lg print:bg-white print:border print:border-gray-200">
+                <h3 className="text-purple-700 font-bold mb-3 border-b border-gray-200 pb-2">2. Kết cấu cơ khí</h3>
+                <div className="grid grid-cols-2 gap-4">
+                   <div>
+                      <span className="block text-sm text-gray-500">Vật liệu chính:</span>
+                      <span className="font-semibold text-lg">
+                        {designData?.frameMaterial === 'bia' && 'Bìa Carton cứng'}
+                        {designData?.frameMaterial === 'que' && 'Que kem'}
+                        {designData?.frameMaterial === 'formex' && 'Bìa Formex'}
+                        {designData?.frameMaterial === 'hon_hop' && 'Hỗn hợp'}
+                      </span>
+                   </div>
+                   <div>
+                      <span className="block text-sm text-gray-500">Số bậc tự do:</span>
+                      <span className="font-semibold text-lg">{designData?.jointCount} Khớp</span>
+                   </div>
+                </div>
               </div>
-              <div className="flex justify-between border-b pb-2">
-                <span className="font-semibold">Số khớp:</span>
-                <span>{designData?.jointCount}</span>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg mt-4">
-                <h4 className="font-semibold mb-2">Ghi chú:</h4>
-                <p className="italic text-gray-600">{designData?.notes || 'Không có ghi chú'}</p>
+
+              <div className="bg-gray-50 p-4 rounded-lg print:bg-white print:border print:border-gray-200">
+                <h3 className="text-gray-700 font-bold mb-2 border-b border-gray-200 pb-2">3. Ghi chú ý tưởng</h3>
+                <p className="italic text-gray-600 min-h-[60px] whitespace-pre-wrap">{designData?.notes || 'Không có ghi chú thêm.'}</p>
               </div>
             </div>
-            <div className="mt-8 text-center">
-              <button 
-                onClick={() => window.print()}
-                className="bg-gray-800 text-white px-6 py-2 rounded hover:bg-black mr-4"
-              >
-                In Phiếu
-              </button>
-              <button 
-                onClick={() => setCurrentStep(AppStep.INTRO)}
-                className="text-indigo-600 hover:underline"
-              >
-                Làm lại từ đầu
-              </button>
+
+            <div className="mt-8 text-center print:hidden">
+              <p className="text-sm text-gray-500 mb-4">Nhấn nút bên dưới để lưu phiếu về máy (PDF) hoặc in ra giấy nộp cho giáo viên.</p>
+              <div className="flex justify-center space-x-4">
+                <button 
+                  onClick={() => window.print()}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-colors flex items-center"
+                >
+                  <Printer className="w-5 h-5 mr-2" />
+                  Lưu PDF / In Phiếu
+                </button>
+                <button 
+                  onClick={() => setCurrentStep(AppStep.INTRO)}
+                  className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-2 px-6 rounded-lg shadow-sm transition-colors"
+                >
+                  Làm lại
+                </button>
+              </div>
+            </div>
+            
+            <div className="hidden print:block mt-12 text-center text-sm text-gray-400">
+                <p>HydraLearn STEM Application - Lớp 8</p>
+                <p>Ngày in: {new Date().toLocaleDateString('vi-VN')}</p>
             </div>
           </div>
         );
@@ -108,19 +142,10 @@ const App: React.FC = () => {
     }
   };
 
-  const getContextString = () => {
-      switch(currentStep) {
-          case AppStep.PASCAL: return "Học sinh đang học về Nguyên lý Pascal và công thức F2/S2 = F1/S1.";
-          case AppStep.MECHANICS: return "Học sinh đang tìm hiểu về các loại khớp (xoay, nâng, kẹp) và vật liệu chế tạo robot.";
-          case AppStep.DESIGN: return "Học sinh đang điền phiếu đề xuất thiết kế robot thủy lực.";
-          default: return "Giới thiệu chung về dự án.";
-      }
-  };
-
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-30">
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800 print:bg-white">
+      {/* Header - Hidden on Print */}
+      <header className="bg-white shadow-sm sticky top-0 z-30 print:hidden">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <div className="flex items-center space-x-2 font-bold text-indigo-700 text-xl">
                 <Beaker className="w-6 h-6" />
@@ -154,19 +179,16 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow p-4 md:p-8 max-w-5xl mx-auto w-full">
+      <main className="flex-grow p-4 md:p-8 max-w-5xl mx-auto w-full print:p-0">
         {renderContent()}
       </main>
 
-      {/* Footer Navigation (Mobile) */}
-      <div className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t p-2 flex justify-around z-20">
+      {/* Footer Navigation (Mobile) - Hidden on Print */}
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t p-2 flex justify-around z-20 print:hidden">
          <button onClick={() => setCurrentStep(AppStep.PASCAL)} className={`p-2 rounded ${currentStep === AppStep.PASCAL ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500'}`}><BookOpen/></button>
          <button onClick={() => setCurrentStep(AppStep.MECHANICS)} className={`p-2 rounded ${currentStep === AppStep.MECHANICS ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500'}`}><Cog/></button>
          <button onClick={() => setCurrentStep(AppStep.DESIGN)} className={`p-2 rounded ${currentStep === AppStep.DESIGN ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500'}`}><FileText/></button>
       </div>
-
-      {/* AI Tutor */}
-      <AITutor context={getContextString()} />
     </div>
   );
 };
