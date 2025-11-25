@@ -142,7 +142,7 @@ export const PascalModule: React.FC = () => {
         </h3>
         <p className="text-gray-700 mb-4">
           Để nâng một vật nặng <strong>500 gram</strong> chỉ bằng một lực ấn tương đương <strong>100 gram</strong>, 
-          bạn cần tỉ lệ diện tích Piston lớn so với Piston nhỏ (S<sub>2</sub>/S<sub>1</sub>) tối thiểu là bao nhiêu?
+          bạn cần tỉ lệ diện tích Piston lớn so với Piston nhỏ (<strong>S<sub>2</sub>/S<sub>1</sub></strong>) tối thiểu là bao nhiêu?
         </p>
         <div className="flex items-center space-x-3">
           <input 
